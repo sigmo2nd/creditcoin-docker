@@ -1,0 +1,53 @@
+x-node-defaults: &node-defaults
+  build: .
+  restart: unless-stopped
+
+services:
+  3node0:
+    <<: *node-defaults
+    container_name: ${SERVER_ID:-dock}-3node0
+    volumes:
+      - ./chainspecs:/root/data/chainspecs
+      - ./3node0/data:/root/data
+    ports:
+      - "${P2P_PORT_3NODE0:-30340}:${P2P_PORT_3NODE0:-30340}"
+      - "${RPC_PORT_3NODE0:-33980}:${RPC_PORT_3NODE0:-33980}"
+    environment:
+      - SERVER_ID=${SERVER_ID:-dock}
+      - NODE_ID=0
+      - NODE_NAME=${SERVER_ID:-dock}-3Node0
+      - P2P_PORT=${P2P_PORT_3NODE0:-30340}
+      - RPC_PORT=${RPC_PORT_3NODE0:-33980}
+      - PRUNING=0
+      - GIT_TAG=${GIT_TAG:-3.32.0-mainnet}
+    networks:
+      creditnet:
+        ipv4_address: 172.20.0.2
+
+  3node1:
+    <<: *node-defaults
+    container_name: ${SERVER_ID:-dock}-3node1
+    volumes:
+      - ./chainspecs:/root/data/chainspecs
+      - ./3node1/data:/root/data
+    ports:
+      - "${P2P_PORT_3NODE1:-30341}:${P2P_PORT_3NODE1:-30341}"
+      - "${RPC_PORT_3NODE1:-33981}:${RPC_PORT_3NODE1:-33981}"
+    environment:
+      - SERVER_ID=${SERVER_ID:-dock}
+      - NODE_ID=1
+      - NODE_NAME=${SERVER_ID:-dock}-3Node1
+      - P2P_PORT=${P2P_PORT_3NODE1:-30341}
+      - RPC_PORT=${RPC_PORT_3NODE1:-33981}
+      - PRUNING=0
+      - GIT_TAG=3.39.0-mainnet
+    networks:
+      creditnet:
+        ipv4_address: 172.20.0.3
+
+networks:
+  creditnet:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
