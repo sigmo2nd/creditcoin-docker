@@ -42,7 +42,7 @@ fi
 
 # 도커파일이 없으면 생성 (최초 한 번만)
 if [ ! -f "Dockerfile.legacy" ]; then
-  cat > Dockerfile.legacy << 'EOD'
+  cat > Dockerfile.legacy << 'EODF'
 FROM ubuntu:22.04
 
 # 필요한 패키지 설치
@@ -114,7 +114,7 @@ VOLUME ["/root/data"]
 
 # 시작 명령어
 ENTRYPOINT ["/start.sh"]
-EOD
+EODF
 fi
 
 # docker-compose-legacy.yml 파일에 새 노드 추가
@@ -123,25 +123,25 @@ if grep -q "node${NODE_NUM}:" docker-compose-legacy.yml 2>/dev/null; then
 else
   # 기존 docker-compose-legacy.yml 파일이 없으면 생성
   if [ ! -f "docker-compose-legacy.yml" ]; then
-    cat > docker-compose-legacy.yml << EOC
+    cat > docker-compose-legacy.yml << 'EODC'
 services:
 
 networks:
-  creditnet:
+  creditnet2:
     ipam:
       driver: default
       config:
-        - subnet: 172.20.0.0/16
-EOC
+        - subnet: 172.21.0.0/16
+EODC
   fi
 
   # 임시 노드 설정 파일 생성
-  cat > node_config.yml << EOC
+  cat > node_config.yml << EOF
   node${NODE_NUM}:
     build:
       context: .
       dockerfile: Dockerfile.legacy
-    container_name: \${SERVER_ID:-d01}-node${NODE_NUM}
+    container_name: node${NODE_NUM}
     volumes:
       - ./node${NODE_NUM}/data:/root/data
     ports:
@@ -154,14 +154,14 @@ EOC
       - WS_PORT=\${WS_PORT_NODE${NODE_NUM}:-${WS_PORT}}
     restart: unless-stopped
     networks:
-      creditnet:
-        ipv4_address: 172.20.0.$((10 + $NODE_NUM))
+      creditnet2:
+        ipv4_address: 172.21.0.$((10 + $NODE_NUM))
 
-EOC
+EOF
 
   # 노드 설정을 docker-compose-legacy.yml에 추가
-  sed -i '/services:/r node_config.yml' docker-compose-legacy.yml
-  rm node_config.yml
+  sed -i '/services:/r node_config.yml' docker-compose-legacy.yml 2>/dev/null || (echo "services:" > temp_compose.yml && cat node_config.yml >> temp_compose.yml && cat docker-compose-legacy.yml >> temp_compose.yml && mv temp_compose.yml docker-compose-legacy.yml)
+  rm -f node_config.yml
 fi
 
 echo "----------------------------------------------------"
@@ -172,8 +172,8 @@ echo "사용 가능한 버전:"
 echo "  - 2.230.2-mainnet (레거시 버전) - Creditcoin 2.0 안정화 버전"
 echo ""
 echo "노드를 시작하려면 다음 명령어를 실행하세요:"
-echo "docker compose -f docker-compose-legacy.yml build node${NODE_NUM} && docker compose -f docker-compose-legacy.yml up -d node${NODE_NUM}"
+echo "docker compose -p creditcoin2 -f docker-compose-legacy.yml build node${NODE_NUM} && docker compose -p creditcoin2 -f docker-compose-legacy.yml up -d node${NODE_NUM}"
 echo ""
 echo "실행 중인 노드 확인: docker ps"
-echo "로그 확인: docker logs -f ${SERVER_ID}-node${NODE_NUM}"
+echo "로그 확인: docker logs -f node${NODE_NUM}"
 echo "----------------------------------------------------"
