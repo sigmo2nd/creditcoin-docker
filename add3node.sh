@@ -140,10 +140,17 @@ grep -q "NODE_NAME_3NODE${NODE_NUM}" .env 2>/dev/null || echo "NODE_NAME_3NODE${
 grep -q "TELEMETRY_3NODE${NODE_NUM}" .env 2>/dev/null || echo "TELEMETRY_3NODE${NODE_NUM}=${TELEMETRY_ENABLED}" >> .env
 grep -q "PRUNING_3NODE${NODE_NUM}" .env 2>/dev/null || echo "PRUNING_3NODE${NODE_NUM}=${PRUNING}" >> .env
 
-# Dockerfile 생성 (파일이 없는 경우)
-if [ ! -f "Dockerfile" ]; then
-  echo "Dockerfile이 없으므로 생성합니다..."
-  cat > Dockerfile << 'EODF'
+# 이미지 이름 설정
+IMAGE_NAME="creditcoin3:${GIT_TAG}"
+
+# 이미지가 존재하는지 확인
+if ! docker images | grep -q "creditcoin3" | grep "${GIT_TAG}"; then
+  echo "이미지 ${IMAGE_NAME}가 존재하지 않습니다. 새로 빌드합니다..."
+  
+  # Dockerfile 생성 (파일이 없는 경우)
+  if [ ! -f "Dockerfile" ]; then
+    echo "Dockerfile이 없으므로 생성합니다..."
+    cat > Dockerfile << 'EODF'
 FROM ubuntu:24.04
 
 # 필요한 패키지 설치
@@ -175,6 +182,7 @@ WORKDIR /root
 RUN git clone https://github.com/gluwa/creditcoin3
 WORKDIR /root/creditcoin3
 RUN git fetch --all --tags
+ARG GIT_TAG
 RUN git checkout ${GIT_TAG}
 RUN git lfs pull
 RUN cargo build --release
@@ -220,7 +228,15 @@ VOLUME ["/root/data"]
 # 시작 명령어
 ENTRYPOINT ["/start.sh"]
 EODF
-  echo "Dockerfile 생성 완료"
+    echo "Dockerfile 생성 완료"
+  fi
+  
+  # 이미지 빌드 (버전별로 한 번만)
+  echo "Creditcoin3 이미지 ${IMAGE_NAME} 빌드 중..."
+  docker build --build-arg GIT_TAG=${GIT_TAG} -t ${IMAGE_NAME} .
+  echo "이미지 빌드 완료"
+else
+  echo "이미지 ${IMAGE_NAME}가 이미 존재합니다. 빌드를 건너뜁니다."
 fi
 
 # docker-compose.yml 파일 생성 (파일이 없는 경우)
@@ -228,7 +244,6 @@ if [ ! -f "docker-compose.yml" ]; then
   echo "docker-compose.yml 파일이 없으므로 생성합니다..."
   cat > docker-compose.yml << 'EOSVC'
 x-node-defaults: &node-defaults
-  build: .
   restart: unless-stopped
 
 services:
@@ -254,6 +269,7 @@ else
   cat > node_config.yml << EOF
   3node${NODE_NUM}:
     <<: *node-defaults
+    image: ${IMAGE_NAME}
     container_name: 3node${NODE_NUM}
     volumes:
       - ./data/${GIT_TAG}/chainspecs:/root/data/chainspecs
@@ -301,7 +317,7 @@ echo "  - 3.39.0-mainnet (최신 버전) - 보다 많은 기능, 업데이트 �
 echo "  - 3.32.0-mainnet (안정 버전) - 안정성 중시, 메모리 사용 최적화"
 echo ""
 echo "노드를 시작하려면 다음 명령어를 실행하세요:"
-echo "docker compose -p creditcoin3 build --no-cache 3node${NODE_NUM} && docker compose -p creditcoin3 up -d 3node${NODE_NUM}"
+echo "docker compose -p creditcoin3 up -d 3node${NODE_NUM}"
 echo ""
 echo "실행 중인 노드 확인: docker ps"
 echo "로그 확인: docker logs -f 3node${NODE_NUM}"
