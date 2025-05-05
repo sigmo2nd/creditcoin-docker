@@ -9,6 +9,15 @@ This project is a collection of scripts for easily setting up and managing Credi
 - Node cleanup and removal (`cleanup2.sh`, `cleanup3.sh`)
 - Various options support: telemetry activation/deactivation, custom node names, pruning settings, etc.
 
+## Installation
+
+To install the utility scripts:
+
+```bash
+./setup.sh
+source ~/.bashrc
+```
+
 ## Usage
 
 ### Creditcoin 3.0 Node Creation
@@ -55,9 +64,11 @@ This project is a collection of scripts for easily setting up and managing Credi
 ./cleanup3.sh
 ```
 
-## Node Management Commands
+## Utility Commands
 
-After running the utility script, the following commands are available:
+After running the setup script, the following commands become available:
+
+### Node Management Commands
 
 - `checkVersion [3node_number]` - Check Creditcoin 3.0 node version (e.g., `checkVersion 0` or `checkVersion 3node0`)
 - `checkVersionLegacy [node_number]` - Check Creditcoin 2.0 node version (e.g., `checkVersionLegacy 0` or `checkVersionLegacy node0`)
@@ -67,27 +78,11 @@ After running the utility script, the following commands are available:
 - `checkNameLegacy [node_number]` - Check Creditcoin 2.0 node name
 - `getLatestBlock [3node_number]` - Get latest block info for Creditcoin 3.0 node
 - `getLatestBlockLegacy [node_number]` - Get latest block info for Creditcoin 2.0 node
-- `rotatekey [3node_number]` - Rotate session keys for Creditcoin 3.0 node
-- `rotatekeyLegacy [node_number]` - Rotate session keys for Creditcoin 2.0 node
-- `payoutAll` - Execute payouts for all running Creditcoin 3.0 nodes
-- `payoutAllLegacy` - Execute payouts for all running Creditcoin 2.0 nodes
+- `rotatekey [3node_number]` - Rotate session keys for 3.0 nodes (accepts either "3node0" or just "0")
+- `rotatekeyLegacy [node_number]` - Rotate session keys for 2.0 nodes (accepts either "node0" or just "0")
+- `payoutAll` - Execute payouts for all running 3.0 nodes
+- `payoutAllLegacy` - Execute payouts for all running 2.0 nodes
 - `genkey [container_name]` - Generate node keys (e.g., `genkey 3node0` or `genkey node0`)
-
-## General Precautions
-
-- Cleanup scripts delete all related containers, images, volumes, and directories. Backing up your data before use is recommended.
-- Sufficient system resources are required for node operation.
-- When telemetry is enabled, node information is made public to the Creditcoin network.
-
-## License
-
-This project is proprietary software with all rights reserved. Unauthorized copying, distribution, or modification is prohibited. For usage permissions, please contact the author.
-
-© 2025 sigmo2nd. All Rights Reserved.
-
-## Utility Scripts
-
-This repository includes a `setup.sh` utility script that adds convenient shortcuts for managing Creditcoin Docker nodes. After running the script, the following commands become available:
 
 ### Docker Management Commands
 - `cdcd` - Navigate to the Creditcoin Docker directory
@@ -98,13 +93,6 @@ This repository includes a `setup.sh` utility script that adds convenient shortc
 - `dstop [container]` - Stop a container
 - `dstart [container]` - Start a container
 - `dlog [container]` - Show container logs
-
-### Creditcoin Node Commands
-- `genkey [container]` - Generate node keys inside a container
-- `rotatekey [node]` - Rotate session keys for 3.0 nodes (accepts either "3node0" or just "0")
-- `rotatekeyLegacy [node]` - Rotate session keys for 2.0 nodes (accepts either "node0" or just "0")
-- `payoutAll` - Execute payouts for all running 3.0 nodes
-- `payoutAllLegacy` - Execute payouts for all running 2.0 nodes
 
 ### System Commands
 - `journalcall [service]` - View service logs
@@ -119,14 +107,11 @@ This repository includes a `setup.sh` utility script that adds convenient shortc
 - `nanocall [service]` - Edit service file
 - `nn [service]` - Shorthand for nanocall
 
-### Installation
+## General Precautions
 
-To install these utilities:
-
-```bash
-./setup.sh
-source ~/.bashrc
-```
+- Cleanup scripts delete all related containers, images, volumes, and directories. Backing up your data before use is recommended.
+- Sufficient system resources are required for node operation.
+- When telemetry is enabled, node information is made public to the Creditcoin network.
 
 ## Contributing
 
@@ -138,3 +123,9 @@ If you wish to contribute, you can participate in the following ways:
 4. **Optimization**: Script optimization and performance improvement suggestions are welcome.
 
 All contributions are subject to review and approval by the administrator. Please contact the administrator before contributing.
+
+## License
+
+This project is proprietary software with all rights reserved. Unauthorized copying, distribution, or modification is prohibited. For usage permissions, please contact the author.
+
+© 2025 sigmo2nd. All Rights Reserved.
