@@ -2,53 +2,12 @@
 
 This project is a collection of scripts for easily setting up and managing Creditcoin nodes using Docker in an **Asahi Linux Ubuntu** environment on Apple Silicon hardware.
 
-## Important! System Requirements
-
-- **Asahi Linux Ubuntu** on Apple Silicon
-- Optimized for Apple Silicon Mac hardware (M1/M2)
-- Docker and Docker Compose
-- Minimum 16GB RAM (Recommended for Creditcoin nodes: 32GB)
-- Sufficient storage space
-
 ## Key Features
 
 - Creditcoin 3.0 node setup and management (`add3node.sh`)
 - Creditcoin 2.0 legacy node setup and management (`add2node.sh`)
 - Node cleanup and removal (`cleanup2.sh`, `cleanup3.sh`)
 - Various options support: telemetry activation/deactivation, custom node names, pruning settings, etc.
-
-## Prerequisites
-
-Before proceeding with the installation of this project, ensure you have:
-
-1. Asahi Linux Ubuntu installed on your Apple Silicon Mac (M1/M2)
-2. Docker and Docker Compose installed:
-```bash
-# Install required packages
-sudo apt update
-sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
-
-# Add Docker repository
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=arm64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-
-# Install Docker
-sudo apt update
-sudo apt install -y docker-ce docker-compose
-
-# Start Docker service and enable autostart
-sudo systemctl start docker
-sudo systemctl enable docker
-
-# Add current user to docker group (allows using docker commands without sudo)
-sudo usermod -aG docker $USER
-```
-
-## Installation
-```bash
-git clone https://github.com/sigmo2nd/creditcoin-docker.git
-cd creditcoin-docker
-```
 
 ## Usage
 
@@ -79,7 +38,7 @@ cd creditcoin-docker
 # Options:
 #   -v, --version      Node version (default: 2.230.2-mainnet)
 #   -t, --telemetry    Enable telemetry (default: disabled)
-#   -n, --name         Node name (default: 3Node<number>)
+#   -n, --name         Node name (default: Node<number>)
 
 # Usage examples:
 ./add2node.sh 0                        # Create node with default settings
@@ -96,11 +55,23 @@ cd creditcoin-docker
 ./cleanup3.sh
 ```
 
-## Asahi Linux Ubuntu Considerations
+## Node Management Commands
 
-This project is specially optimized for Asahi Linux Ubuntu installed on Apple Silicon (M1/M2) Macs. Asahi Linux Ubuntu leverages the ARM architecture natively, delivering optimal performance without x86 emulation.
+After running the utility script, the following commands are available:
 
-While Asahi Linux Ubuntu may have limited support for some I/O devices (especially GPUs), this does not affect Creditcoin node operations.
+- `checkVersion [3node_number]` - Check Creditcoin 3.0 node version (e.g., `checkVersion 0` or `checkVersion 3node0`)
+- `checkVersionLegacy [node_number]` - Check Creditcoin 2.0 node version (e.g., `checkVersionLegacy 0` or `checkVersionLegacy node0`)
+- `checkHealth [3node_number]` - Check Creditcoin 3.0 node health status
+- `checkHealthLegacy [node_number]` - Check Creditcoin 2.0 node health status
+- `checkName [3node_number]` - Check Creditcoin 3.0 node name
+- `checkNameLegacy [node_number]` - Check Creditcoin 2.0 node name
+- `getLatestBlock [3node_number]` - Get latest block info for Creditcoin 3.0 node
+- `getLatestBlockLegacy [node_number]` - Get latest block info for Creditcoin 2.0 node
+- `rotatekey [3node_number]` - Rotate session keys for Creditcoin 3.0 node
+- `rotatekeyLegacy [node_number]` - Rotate session keys for Creditcoin 2.0 node
+- `payoutAll` - Execute payouts for all running Creditcoin 3.0 nodes
+- `payoutAllLegacy` - Execute payouts for all running Creditcoin 2.0 nodes
+- `genkey [container_name]` - Generate node keys (e.g., `genkey 3node0` or `genkey node0`)
 
 ## General Precautions
 

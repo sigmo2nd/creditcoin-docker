@@ -9,7 +9,7 @@ if [ $# -lt 1 ]; then
   echo "옵션:"
   echo "  -v, --version      노드 버전 (기본값: 2.230.2-mainnet)"
   echo "  -t, --telemetry    텔레메트리 활성화 (기본값: 비활성화)"
-  echo "  -n, --name         노드 이름 (기본값: 3Node<번호>)"
+  echo "  -n, --name         노드 이름 (기본값: Node<번호>)"
   echo ""
   echo "사용 예시:"
   echo "  ./add2node.sh 0                        # 기본 설정으로 노드 생성"
@@ -31,7 +31,7 @@ shift
 # 기본값 설정
 GIT_TAG="2.230.2-mainnet"
 TELEMETRY_ENABLED="false"
-NODE_NAME="3Node$NODE_NUM"
+NODE_NAME="Node$NODE_NUM"
 
 # 옵션 파싱
 while [ $# -gt 0 ]; do
@@ -70,7 +70,7 @@ P2P_PORT=$((BASE_P2P_PORT + $NODE_NUM))
 WS_PORT=$((BASE_WS_PORT + $NODE_NUM))
 
 # .env 파일 업데이트 또는 생성
-SERVER_ID=$(grep SERVER_ID .env 2>/dev/null | cut -d= -f2 || echo "d01")
+SERVER_ID=$(grep SERVER_ID .env 2>/dev/null | cut -d= -f2 || echo "dock")
 if [ ! -f ".env" ]; then
   echo "SERVER_ID=${SERVER_ID}" > .env
 fi
@@ -85,9 +85,16 @@ if ! grep -q "P2P_PORT_NODE${NODE_NUM}" .env 2>/dev/null; then
   echo "TELEMETRY_ENABLED_${NODE_NUM}=${TELEMETRY_ENABLED}" >> .env
 fi
 
-# 도커파일이 없으면 생성 (최초 한 번만)
-if [ ! -f "Dockerfile.legacy" ]; then
-  cat > Dockerfile.legacy << 'EODF'
+# 이미지 이름 설정
+IMAGE_NAME="creditcoin2:${GIT_TAG}"
+
+# 이미지가 존재하는지 확인
+if ! docker images | grep -q "creditcoin2" | grep "${GIT_TAG}"; then
+  echo "이미지 ${IMAGE_NAME}가 존재하지 않습니다. 새로 빌드합니다..."
+
+  # 도커파일이 없으면 생성 (최초 한 번만)
+  if [ ! -f "Dockerfile.legacy" ]; then
+    cat > Dockerfile.legacy << 'EODF'
 FROM ubuntu:22.04
 
 # 필요한 패키지 설치
@@ -120,7 +127,8 @@ WORKDIR /root
 RUN git clone https://github.com/gluwa/creditcoin
 WORKDIR /root/creditcoin
 RUN git fetch --all --tags
-RUN git checkout 2.230.2-mainnet
+ARG GIT_TAG
+RUN git checkout ${GIT_TAG}
 
 # Substrate 의존성 해결을 위한 .cargo/config 설정
 RUN mkdir -p /root/.cargo
@@ -168,6 +176,14 @@ VOLUME ["/root/data"]
 # 시작 명령어
 ENTRYPOINT ["/start.sh"]
 EODF
+  fi
+
+  # 이미지 빌드 (버전별로 한 번만)
+  echo "Creditcoin2 이미지 ${IMAGE_NAME} 빌드 중..."
+  docker build --build-arg GIT_TAG=${GIT_TAG} -t ${IMAGE_NAME} -f Dockerfile.legacy .
+  echo "이미지 빌드 완료"
+else
+  echo "이미지 ${IMAGE_NAME}가 이미 존재합니다. 빌드를 건너뜁니다."
 fi
 
 # docker-compose-legacy.yml 파일에 새 노드 추가
@@ -191,9 +207,7 @@ EODC
   # 임시 노드 설정 파일 생성
   cat > node_config.yml << EOF
   node${NODE_NUM}:
-    build:
-      context: .
-      dockerfile: Dockerfile.legacy
+    image: ${IMAGE_NAME}
     container_name: node${NODE_NUM}
     volumes:
       - ./node${NODE_NUM}/data:/root/data
@@ -201,7 +215,7 @@ EODC
       - "\${P2P_PORT_NODE${NODE_NUM}:-${P2P_PORT}}:\${P2P_PORT_NODE${NODE_NUM}:-${P2P_PORT}}"
       - "\${WS_PORT_NODE${NODE_NUM}:-${WS_PORT}}:\${WS_PORT_NODE${NODE_NUM}:-${WS_PORT}}"
     environment:
-      - SERVER_ID=\${SERVER_ID:-d01}
+      - SERVER_ID=\${SERVER_ID:-dock}
       - NODE_NAME=\${NODE_NAME_${NODE_NUM}:-${NODE_NAME}}
       - P2P_PORT=\${P2P_PORT_NODE${NODE_NUM}:-${P2P_PORT}}
       - WS_PORT=\${WS_PORT_NODE${NODE_NUM}:-${WS_PORT}}
@@ -225,8 +239,9 @@ echo ""
 echo "사용 가능한 버전:"
 echo "  - 2.230.2-mainnet (레거시 버전) - Creditcoin 2.0 안정화 버전"
 echo ""
-echo "노드를 시작하려면 다음 명령어를 실행하세요:"
-echo "docker compose -p creditcoin2 -f docker-compose-legacy.yml build node${NODE_NUM} && docker compose -p creditcoin2 -f docker-compose-legacy.yml up -d node${NODE_NUM}"
+echo "노드를 시작합니다..."
+docker compose -p creditcoin2 -f docker-compose-legacy.yml up -d node${NODE_NUM}
+echo "노드가 성공적으로 시작되었습니다."
 echo ""
 echo "실행 중인 노드 확인: docker ps"
 echo "로그 확인: docker logs -f node${NODE_NUM}"

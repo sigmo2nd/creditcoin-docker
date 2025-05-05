@@ -72,7 +72,7 @@ echo "- 프루닝: $PRUNING $([ "$PRUNING" == "0" ] && echo "(비활성화)" || 
 
 # 현재 작업 디렉토리 저장
 CURRENT_DIR=$(pwd)
-SERVER_ID=$(grep SERVER_ID .env 2>/dev/null | cut -d= -f2 || echo "dock01")
+SERVER_ID=$(grep SERVER_ID .env 2>/dev/null | cut -d= -f2 || echo "dock")
 
 # 노드 데이터 디렉토리 생성
 mkdir -p ./3node${NODE_NUM}/data
@@ -316,9 +316,10 @@ echo "사용 가능한 버전:"
 echo "  - 3.39.0-mainnet (최신 버전) - 보다 많은 기능, 업데이트 포함"
 echo "  - 3.32.0-mainnet (안정 버전) - 안정성 중시, 메모리 사용 최적화"
 echo ""
-echo "----------------------------------------------------"
 echo "노드를 시작합니다..."
 docker compose -p creditcoin3 up -d 3node${NODE_NUM}
 echo "노드가 성공적으로 시작되었습니다."
+echo ""
+echo "실행 중인 노드 확인: docker ps"
 echo "로그 확인: docker logs -f 3node${NODE_NUM}"
 echo "----------------------------------------------------"
