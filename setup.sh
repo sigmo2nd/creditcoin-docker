@@ -74,20 +74,40 @@ if [ -f "$HOME/.config/creditcoin-docker/config" ]; then
       fi
     }
     
-    # 세션 키 교체 - 3.0 노드
+    # 세션 키 교체 - 3.0 노드 (전체 노드 이름 입력 받음)
     rotatekey() { 
-      local num=$1
-      local port=$((33980 + $num))
-      echo "Rotating session keys for 3node$num (port: $port)"
-      curl -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys","params":[]}' http://localhost:$port/ | jq
+      local node=$1
+      if [[ $node == 3node* ]]; then
+        local num=$(echo $node | sed 's/3node//g')
+        local port=$((33980 + $num))
+        echo "Rotating session keys for $node (port: $port)"
+        curl -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys","params":[]}' http://localhost:$port/ | jq
+      elif [[ $node =~ ^[0-9]+$ ]]; then
+        # 숫자만 입력한 경우
+        local port=$((33980 + $node))
+        echo "Rotating session keys for 3node$node (port: $port)"
+        curl -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys","params":[]}' http://localhost:$port/ | jq
+      else
+        echo "Invalid input. Use '3nodeX' format or just the node number."
+      fi
     }
     
-    # 세션 키 교체 - 2.0 노드
+    # 세션 키 교체 - 2.0 노드 (전체 노드 이름 입력 받음)
     rotatekeyLegacy() { 
-      local num=$1
-      local port=$((33970 + $num))
-      echo "Rotating session keys for node$num (port: $port)"
-      curl -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys","params":[]}' http://localhost:$port/ | jq
+      local node=$1
+      if [[ $node == node* ]]; then
+        local num=$(echo $node | sed 's/node//g')
+        local port=$((33970 + $num))
+        echo "Rotating session keys for $node (port: $port)"
+        curl -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys","params":[]}' http://localhost:$port/ | jq
+      elif [[ $node =~ ^[0-9]+$ ]]; then
+        # 숫자만 입력한 경우
+        local port=$((33970 + $node))
+        echo "Rotating session keys for node$node (port: $port)"
+        curl -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys","params":[]}' http://localhost:$port/ | jq
+      else
+        echo "Invalid input. Use 'nodeX' format or just the node number."
+      fi
     }
     
     # Creditcoin 3.0 노드만 대상으로 페이아웃 실행

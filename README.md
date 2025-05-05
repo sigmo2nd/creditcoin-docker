@@ -130,8 +130,8 @@ This repository includes a `setup.sh` utility script that adds convenient shortc
 
 ### Creditcoin Node Commands
 - `genkey [container]` - Generate node keys inside a container
-- `rotatekey [number]` - Rotate session keys for 3.0 node (e.g., rotatekey 0)
-- `rotatekeyLegacy [number]` - Rotate session keys for 2.0 node
+- `rotatekey [node]` - Rotate session keys for 3.0 nodes (accepts either "3node0" or just "0")
+- `rotatekeyLegacy [node]` - Rotate session keys for 2.0 nodes (accepts either "node0" or just "0")
 - `payoutAll` - Execute payouts for all running 3.0 nodes
 - `payoutAllLegacy` - Execute payouts for all running 2.0 nodes
 
