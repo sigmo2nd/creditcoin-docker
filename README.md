@@ -1,10 +1,10 @@
 # Creditcoin Docker
 
-This project is a collection of scripts for easily setting up and managing Creditcoin nodes using Docker in an **Asahi Linux** ARM-based environment.
+This project is a collection of scripts for easily setting up and managing Creditcoin nodes using Docker in an **Asahi Linux Ubuntu** environment on Apple Silicon hardware.
 
 ## Important! System Requirements
 
-- **Asahi Linux** ARM-based Ubuntu
+- **Asahi Linux Ubuntu** on Apple Silicon
 - Optimized for Apple Silicon Mac hardware (M1/M2)
 - Docker and Docker Compose
 - Minimum 16GB RAM (Recommended for Creditcoin nodes: 32GB)
@@ -19,8 +19,30 @@ This project is a collection of scripts for easily setting up and managing Credi
 
 ## Installation
 
+1. Install Docker and Docker Compose:
 ```bash
-# Clone the repository
+# Install required packages
+sudo apt update
+sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+
+# Add Docker repository
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=arm64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+# Install Docker
+sudo apt update
+sudo apt install -y docker-ce docker-compose
+
+# Start Docker service and enable autostart
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Add current user to docker group (allows using docker commands without sudo)
+sudo usermod -aG docker $USER
+```
+
+2. Clone the repository:
+```bash
 git clone https://github.com/sigmo2nd/creditcoin-docker.git
 cd creditcoin-docker
 ```
@@ -71,11 +93,11 @@ cd creditcoin-docker
 ./cleanup3.sh
 ```
 
-## Asahi Linux Considerations
+## Asahi Linux Ubuntu Considerations
 
-This project is specially optimized for Asahi Linux installed on Apple Silicon (M1/M2) Macs. Asahi Linux leverages the ARM architecture natively, delivering optimal performance without x86 emulation.
+This project is specially optimized for Asahi Linux Ubuntu installed on Apple Silicon (M1/M2) Macs. Asahi Linux Ubuntu leverages the ARM architecture natively, delivering optimal performance without x86 emulation.
 
-While Asahi Linux may have limited support for some I/O devices (especially GPUs), this does not affect Creditcoin node operations.
+While Asahi Linux Ubuntu may have limited support for some I/O devices (especially GPUs), this does not affect Creditcoin node operations.
 
 ## General Precautions
 
