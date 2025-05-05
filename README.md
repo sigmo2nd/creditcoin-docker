@@ -17,9 +17,12 @@ This project is a collection of scripts for easily setting up and managing Credi
 - Node cleanup and removal (`cleanup2.sh`, `cleanup3.sh`)
 - Various options support: telemetry activation/deactivation, custom node names, pruning settings, etc.
 
-## Installation
+## Prerequisites
 
-1. Install Docker and Docker Compose:
+Before proceeding with the installation of this project, ensure you have:
+
+1. Asahi Linux Ubuntu installed on your Apple Silicon Mac (M1/M2)
+2. Docker and Docker Compose installed:
 ```bash
 # Install required packages
 sudo apt update
@@ -41,7 +44,7 @@ sudo systemctl enable docker
 sudo usermod -aG docker $USER
 ```
 
-2. Clone the repository:
+## Installation
 ```bash
 git clone https://github.com/sigmo2nd/creditcoin-docker.git
 cd creditcoin-docker
