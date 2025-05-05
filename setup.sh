@@ -9,6 +9,7 @@ CONFIG_FILE="$CONFIG_DIR/config"
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # 설정 초기화 함수
@@ -74,43 +75,35 @@ if [ -f "$HOME/.config/creditcoin-docker/config" ]; then
       fi
     }
     
-    # 세션 키 교체 - 3.0 노드 (전체 노드 이름 입력 받음)
+    # 세션 키 교체 - 3.0 노드 (컨테이너 내부에서 실행)
     rotatekey() { 
       local node=$1
       if [[ $node == 3node* ]]; then
-        local num=$(echo $node | sed 's/3node//g')
-        local port=$((33980 + $num))
-        echo "Rotating session keys for $node (port: $port)"
-        curl -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys","params":[]}' http://localhost:$port/ | jq
+        echo "Rotating session keys for $node"
+        docker exec $node curl -s -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys", "params":[]}' http://localhost:9933/
       elif [[ $node =~ ^[0-9]+$ ]]; then
-        # 숫자만 입력한 경우
-        local port=$((33980 + $node))
-        echo "Rotating session keys for 3node$node (port: $port)"
-        curl -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys","params":[]}' http://localhost:$port/ | jq
+        echo "Rotating session keys for 3node$node"
+        docker exec 3node$node curl -s -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys", "params":[]}' http://localhost:9933/
       else
         echo "Invalid input. Use '3nodeX' format or just the node number."
       fi
     }
     
-    # 세션 키 교체 - 2.0 노드 (전체 노드 이름 입력 받음)
+    # 세션 키 교체 - 2.0 노드 (컨테이너 내부에서 실행)
     rotatekeyLegacy() { 
       local node=$1
       if [[ $node == node* ]]; then
-        local num=$(echo $node | sed 's/node//g')
-        local port=$((33970 + $num))
-        echo "Rotating session keys for $node (port: $port)"
-        curl -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys","params":[]}' http://localhost:$port/ | jq
+        echo "Rotating session keys for $node"
+        docker exec $node curl -s -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys", "params":[]}' http://localhost:9933/
       elif [[ $node =~ ^[0-9]+$ ]]; then
-        # 숫자만 입력한 경우
-        local port=$((33970 + $node))
-        echo "Rotating session keys for node$node (port: $port)"
-        curl -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys","params":[]}' http://localhost:$port/ | jq
+        echo "Rotating session keys for node$node"
+        docker exec node$node curl -s -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys", "params":[]}' http://localhost:9933/
       else
         echo "Invalid input. Use 'nodeX' format or just the node number."
       fi
     }
     
-    # Creditcoin 3.0 노드만 대상으로 페이아웃 실행
+    # Creditcoin 3.0 노드만 대상으로 페이아웃 실행 (컨테이너 내부에서 실행)
     payoutAll() {
       echo "모든 Creditcoin 3.0 노드에 대해 페이아웃을 순차적으로 실행합니다..."
       
@@ -128,10 +121,9 @@ if [ -f "$HOME/.config/creditcoin-docker/config" ]; then
         echo "노드 $node 페이아웃 실행 중..."
         # 노드 번호 추출
         local num=$(echo $node | sed 's/3node//g')
-        local port=$((33980 + $num))
-        echo "RPC 포트: $port"
-        # 페이아웃 명령 실행
-        curl -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "staking_payoutStakers","params":["ACCOUNT_ADDRESS", ERA_NUMBER]}' http://localhost:$port/
+        echo "RPC 포트: 9933 (내부)"
+        # 페이아웃 명령 실행 (컨테이너 내부에서)
+        docker exec $node curl -s -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "staking_payoutStakers","params":["ACCOUNT_ADDRESS", ERA_NUMBER]}' http://localhost:9933/
         echo ""
         sleep 2
       done
@@ -139,7 +131,7 @@ if [ -f "$HOME/.config/creditcoin-docker/config" ]; then
       echo "모든 Creditcoin 3.0 노드의 페이아웃이 완료되었습니다."
     }
     
-    # Creditcoin 2.0 (레거시) 노드만 대상으로 페이아웃 실행
+    # Creditcoin 2.0 (레거시) 노드만 대상으로 페이아웃 실행 (컨테이너 내부에서 실행)
     payoutAllLegacy() {
       echo "모든 Creditcoin 2.0 레거시 노드에 대해 페이아웃을 순차적으로 실행합니다..."
       
@@ -157,10 +149,9 @@ if [ -f "$HOME/.config/creditcoin-docker/config" ]; then
         echo "노드 $node 페이아웃 실행 중..."
         # 노드 번호 추출
         local num=$(echo $node | sed 's/node//g')
-        local port=$((33970 + $num))
-        echo "RPC 포트: $port"
-        # 페이아웃 명령 실행
-        curl -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "staking_payoutStakers","params":["ACCOUNT_ADDRESS", ERA_NUMBER]}' http://localhost:$port/
+        echo "RPC 포트: 9933 (내부)"
+        # 페이아웃 명령 실행 (컨테이너 내부에서)
+        docker exec $node curl -s -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "staking_payoutStakers","params":["ACCOUNT_ADDRESS", ERA_NUMBER]}' http://localhost:9933/
         echo ""
         sleep 2
       done
