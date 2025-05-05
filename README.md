@@ -114,6 +114,49 @@ This project is proprietary software with all rights reserved. Unauthorized copy
 
 © 2025 sigmo2nd. All Rights Reserved.
 
+## Utility Scripts
+
+This repository includes a `setup.sh` utility script that adds convenient shortcuts for managing Creditcoin Docker nodes. After running the script, the following commands become available:
+
+### Docker Management Commands
+- `cdcd` - Navigate to the Creditcoin Docker directory
+- `dps` - List running containers
+- `dpsa` - List all containers (including stopped ones)
+- `dstats` - Show resource usage of containers
+- `drestart [container]` - Restart a container
+- `dstop [container]` - Stop a container
+- `dstart [container]` - Start a container
+- `dlog [container]` - Show container logs
+
+### Creditcoin Node Commands
+- `genkey [container]` - Generate node keys inside a container
+- `rotatekey [number]` - Rotate session keys for 3.0 node (e.g., rotatekey 0)
+- `rotatekeyLegacy [number]` - Rotate session keys for 2.0 node
+- `payoutAll` - Execute payouts for all running 3.0 nodes
+- `payoutAllLegacy` - Execute payouts for all running 2.0 nodes
+
+### System Commands
+- `journalcall [service]` - View service logs
+- `jc [service]` - Shorthand for journalcall
+- `cdsys` - Navigate to /etc/systemd/system
+- `sysdr` - Run systemctl daemon-reload
+- `sysre [service]` - Restart a service
+- `sysen [service]` - Enable a service
+- `sysst [service]` - Check service status
+- `updateb` - Reload ~/.bashrc
+- `editb` - Edit ~/.bashrc
+- `nanocall [service]` - Edit service file
+- `nn [service]` - Shorthand for nanocall
+
+### Installation
+
+To install these utilities:
+
+```bash
+./setup.sh
+source ~/.bashrc
+```
+
 ## Contributing
 
 If you wish to contribute, you can participate in the following ways:
