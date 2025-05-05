@@ -1,101 +1,101 @@
 # Creditcoin Docker
 
-이 프로젝트는 **아사히 리눅스(Asahi Linux)** ARM 기반 환경에서 Docker를 사용하여 Creditcoin 노드를 쉽게 설정하고 관리할 수 있는 스크립트 모음입니다.
+This project is a collection of scripts for easily setting up and managing Creditcoin nodes using Docker in an **Asahi Linux** ARM-based environment.
 
-## 중요! 시스템 요구사항
+## Important! System Requirements
 
-- **아사히 리눅스(Asahi Linux)** ARM 기반 Ubuntu
-- Apple Silicon 맥 하드웨어(M1/M2)에 최적화됨
-- Docker 및 Docker Compose
-- 최소 16GB RAM (Creditcoin 노드 권장 사양: 32GB)
-- 충분한 저장 공간
+- **Asahi Linux** ARM-based Ubuntu
+- Optimized for Apple Silicon Mac hardware (M1/M2)
+- Docker and Docker Compose
+- Minimum 16GB RAM (Recommended for Creditcoin nodes: 32GB)
+- Sufficient storage space
 
-## 주요 기능
+## Key Features
 
-- Creditcoin 3.0 노드 설정 및 관리 (`add3node.sh`)
-- Creditcoin 2.0 레거시 노드 설정 및 관리 (`add2node.sh`)
-- 노드 정리 및 삭제 (`cleanup2.sh`, `cleanup3.sh`)
-- 다양한 옵션 지원: 텔레메트리 활성화/비활성화, 커스텀 노드 이름, 프루닝 설정 등
+- Creditcoin 3.0 node setup and management (`add3node.sh`)
+- Creditcoin 2.0 legacy node setup and management (`add2node.sh`)
+- Node cleanup and removal (`cleanup2.sh`, `cleanup3.sh`)
+- Various options support: telemetry activation/deactivation, custom node names, pruning settings, etc.
 
-## 설치 방법
+## Installation
 
 ```bash
-# 저장소 클론
+# Clone the repository
 git clone https://github.com/sigmo2nd/creditcoin-docker.git
 cd creditcoin-docker
 ```
 
-## 사용 방법
+## Usage
 
-### Creditcoin 3.0 노드 생성
+### Creditcoin 3.0 Node Creation
 
 ```bash
-./add3node.sh <노드번호> [옵션]
+./add3node.sh <node_number> [options]
 
-# 옵션:
-#   -v, --version      노드 버전 (기본값: 3.32.0-mainnet)
-#   -t, --telemetry    텔레메트리 활성화 (기본값: 비활성화)
-#   -n, --name         노드 이름 (기본값: 3Node<번호>)
-#   -p, --pruning      프루닝 값 설정 (기본값: 0, 0일 경우 옵션 추가 안함)
+# Options:
+#   -v, --version      Node version (default: 3.32.0-mainnet)
+#   -t, --telemetry    Enable telemetry (default: disabled)
+#   -n, --name         Node name (default: 3Node<number>)
+#   -p, --pruning      Pruning value setting (default: 0, no option added if 0)
 
-# 사용 예시:
-./add3node.sh 0                      # 기본 설정으로 노드 생성
-./add3node.sh 1 -v 3.39.0-mainnet    # 최신 버전으로 노드 생성
-./add3node.sh 2 -t                   # 텔레메트리 활성화한 노드 생성
-./add3node.sh 3 -n ValidatorA        # 지정한 이름으로 노드 생성
-./add3node.sh 4 -p 1000              # 프루닝 값 1000으로 설정
+# Usage examples:
+./add3node.sh 0                      # Create node with default settings
+./add3node.sh 1 -v 3.39.0-mainnet    # Create node with latest version
+./add3node.sh 2 -t                   # Create node with telemetry enabled
+./add3node.sh 3 -n ValidatorA        # Create node with specified name
+./add3node.sh 4 -p 1000              # Create node with pruning value 1000
 ```
 
-### Creditcoin 2.0 레거시 노드 생성
+### Creditcoin 2.0 Legacy Node Creation
 
 ```bash
-./add2node.sh <노드번호> [옵션]
+./add2node.sh <node_number> [options]
 
-# 옵션:
-#   -v, --version      노드 버전 (기본값: 2.230.2-mainnet)
-#   -t, --telemetry    텔레메트리 활성화 (기본값: 비활성화)
-#   -n, --name         노드 이름 (기본값: 3Node<번호>)
+# Options:
+#   -v, --version      Node version (default: 2.230.2-mainnet)
+#   -t, --telemetry    Enable telemetry (default: disabled)
+#   -n, --name         Node name (default: 3Node<number>)
 
-# 사용 예시:
-./add2node.sh 0                        # 기본 설정으로 노드 생성
-./add2node.sh 1 -t -n ValidatorLegacy  # 텔레메트리 활성화 및 이름 지정
+# Usage examples:
+./add2node.sh 0                        # Create node with default settings
+./add2node.sh 1 -t -n ValidatorLegacy  # Create node with telemetry enabled and specified name
 ```
 
-### 노드 정리
+### Node Cleanup
 
 ```bash
-# Creditcoin 2.0 레거시 노드 정리
+# Creditcoin 2.0 legacy node cleanup
 ./cleanup2.sh
 
-# Creditcoin 3.0 노드 정리
+# Creditcoin 3.0 node cleanup
 ./cleanup3.sh
 ```
 
-## 아사히 리눅스 관련 주의사항
+## Asahi Linux Considerations
 
-이 프로젝트는 특별히 Apple Silicon(M1/M2) 맥에 설치된 아사히 리눅스에 최적화되어 있습니다. 아사히 리눅스는 ARM 아키텍처를 네이티브로 활용하므로 x86 에뮬레이션 없이 최고의 성능을 발휘합니다.
+This project is specially optimized for Asahi Linux installed on Apple Silicon (M1/M2) Macs. Asahi Linux leverages the ARM architecture natively, delivering optimal performance without x86 emulation.
 
-현재 아사히 리눅스는 일부 I/O 장치(특히 GPU)에 대한 지원이 제한적일 수 있으나, Creditcoin 노드 운영에는 영향이 없습니다.
+While Asahi Linux may have limited support for some I/O devices (especially GPUs), this does not affect Creditcoin node operations.
 
-## 일반 주의사항
+## General Precautions
 
-- 정리 스크립트는 모든 관련 컨테이너, 이미지, 볼륨, 디렉토리를 삭제합니다. 사용 전 데이터 백업을 권장합니다.
-- 노드 운영을 위해 충분한 시스템 리소스가 필요합니다.
-- 텔레메트리 활성화 시 노드 정보가 Creditcoin 네트워크에 공개됩니다.
+- Cleanup scripts delete all related containers, images, volumes, and directories. Backing up your data before use is recommended.
+- Sufficient system resources are required for node operation.
+- When telemetry is enabled, node information is made public to the Creditcoin network.
 
-## 라이센스
+## License
 
-이 프로젝트는 모든 권리를 보유한 폐쇄적 소프트웨어입니다. 무단 복제, 배포, 수정이 금지되어 있습니다. 사용 권한은 작성자에게 문의하시기 바랍니다.
+This project is proprietary software with all rights reserved. Unauthorized copying, distribution, or modification is prohibited. For usage permissions, please contact the author.
 
 © 2025 sigmo2nd. All Rights Reserved.
 
-## 기여 방법
+## Contributing
 
-기여를 원하시는 경우 다음과 같은 방법으로 참여하실 수 있습니다:
+If you wish to contribute, you can participate in the following ways:
 
-1. **이슈 보고**: 버그를 발견하셨거나 개선 제안이 있으시면 GitHub 이슈를 통해 알려주세요.
-2. **문서화**: 설명서 개선이나 사용 예시 추가를 통해 기여하실 수 있습니다.
-3. **테스트**: 다양한 환경에서 테스트하고 결과를 공유해주세요.
-4. **최적화**: 스크립트 최적화 및 성능 개선 제안을 환영합니다.
+1. **Issue Reporting**: If you discover bugs or have improvement suggestions, please let us know through GitHub issues.
+2. **Documentation**: You can contribute by improving documentation or adding usage examples.
+3. **Testing**: Test in various environments and share your results.
+4. **Optimization**: Script optimization and performance improvement suggestions are welcome.
 
-모든 기여는 관리자의 검토 및 승인 후 적용됩니다. 기여하기 전에 반드시 관리자에게 문의하시기 바랍니다.# ctc-node-setup
+All contributions are subject to review and approval by the administrator. Please contact the administrator before contributing.
