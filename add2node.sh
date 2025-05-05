@@ -1,21 +1,64 @@
 #!/bin/bash
 
-if [ $# -lt 1 ] || [ $# -gt 2 ]; then
-  echo "사용법: $0 <노드번호> [노드이름]"
+if [ $# -lt 1 ]; then
+  echo "사용법: $0 <노드번호> [옵션]"
+  echo ""
+  echo "필수 매개변수:"
+  echo "  <노드번호>         생성할 노드의 번호 (예: 0, 1, 2, ...)"
+  echo ""
+  echo "옵션:"
+  echo "  -v, --version      노드 버전 (기본값: 2.230.2-mainnet)"
+  echo "  -t, --telemetry    텔레메트리 활성화 (기본값: 비활성화)"
+  echo "  -n, --name         노드 이름 (기본값: 3Node<번호>)"
   echo ""
   echo "사용 예시:"
-  echo "  ./add2node.sh 0          # 기본 이름(Taco0)으로 node0 생성"
-  echo "  ./add2node.sh 0 MyNode   # 'MyNode' 이름으로 node0 생성"
+  echo "  ./add2node.sh 0                        # 기본 설정으로 노드 생성"
+  echo "  ./add2node.sh 1 -v 2.230.2-mainnet     # 특정 버전으로 노드 생성"
+  echo "  ./add2node.sh 2 -t                     # 텔레메트리 활성화한 노드 생성"
+  echo "  ./add2node.sh 3 -n MyValidator         # 지정한 이름으로 노드 생성"
+  echo "  ./add2node.sh 4 -v 2.230.2-mainnet -t -n MainNode  # 모든 옵션 지정"
+  echo ""
+  echo "버전 정보:"
+  echo "  2.230.2-mainnet: Creditcoin 2.0 레거시"
   echo ""
   exit 1
 fi
 
+# 첫 번째 매개변수는 노드 번호
 NODE_NUM=$1
-NODE_NAME=${2:-Taco$NODE_NUM}
-SERVER_ID=$(grep SERVER_ID .env 2>/dev/null | cut -d= -f2 || echo "d01")
-GIT_TAG="2.230.2-mainnet"  # 확인된 태그
+shift
+
+# 기본값 설정
+GIT_TAG="2.230.2-mainnet"
+TELEMETRY_ENABLED="false"
+NODE_NAME="3Node$NODE_NUM"
+
+# 옵션 파싱
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -v|--version)
+      GIT_TAG="$2"
+      shift 2
+      ;;
+    -t|--telemetry)
+      TELEMETRY_ENABLED="true"
+      shift
+      ;;
+    -n|--name)
+      NODE_NAME="$2"
+      shift 2
+      ;;
+    *)
+      echo "알 수 없는 옵션: $1"
+      exit 1
+      ;;
+  esac
+done
 
 echo "사용할 버전: $GIT_TAG (Creditcoin 2.0 레거시)"
+echo "- 노드 번호: $NODE_NUM"
+echo "- 노드 이름: $NODE_NAME"
+echo "- 텔레메트리: $([ "$TELEMETRY_ENABLED" == "true" ] && echo "활성화" || echo "비활성화")"
 
 # 노드 데이터 디렉토리 생성
 mkdir -p ./node${NODE_NUM}/data
@@ -27,6 +70,7 @@ P2P_PORT=$((BASE_P2P_PORT + $NODE_NUM))
 WS_PORT=$((BASE_WS_PORT + $NODE_NUM))
 
 # .env 파일 업데이트 또는 생성
+SERVER_ID=$(grep SERVER_ID .env 2>/dev/null | cut -d= -f2 || echo "d01")
 if [ ! -f ".env" ]; then
   echo "SERVER_ID=${SERVER_ID}" > .env
 fi
@@ -38,6 +82,7 @@ if ! grep -q "P2P_PORT_NODE${NODE_NUM}" .env 2>/dev/null; then
   echo "P2P_PORT_NODE${NODE_NUM}=${P2P_PORT}" >> .env
   echo "WS_PORT_NODE${NODE_NUM}=${WS_PORT}" >> .env
   echo "NODE_NAME_${NODE_NUM}=${NODE_NAME}" >> .env
+  echo "TELEMETRY_ENABLED_${NODE_NUM}=${TELEMETRY_ENABLED}" >> .env
 fi
 
 # 도커파일이 없으면 생성 (최초 한 번만)
@@ -93,12 +138,20 @@ RUN echo '#!/bin/bash \n\
 # 외부 IP 가져오기 (여러 방법으로 시도) \n\
 PUBLIC_IP=$(curl -s https://api.ipify.org || curl -s https://ifconfig.me || curl -s https://icanhazip.com) \n\
 echo "Using IP address: $PUBLIC_IP" \n\
+\n\
+# 텔레메트리 설정 결정 \n\
+if [ "${TELEMETRY_ENABLED}" == "true" ]; then \n\
+  TELEMETRY_OPTS="" \n\
+else \n\
+  TELEMETRY_OPTS="--no-telemetry" \n\
+fi \n\
+\n\
 /root/creditcoin/target/release/creditcoin-node \
   --validator \
   --name ${NODE_NAME} \
   --prometheus-external \
   --telemetry-url "wss://telemetry.creditcoin.network/submit/ 0" \
-  --no-telemetry \
+  $TELEMETRY_OPTS \
   --bootnodes "/dns4/bootnode.creditcoin.network/tcp/30333/p2p/12D3KooWAEgDL126EUFxFfdQKiUhmx3BJPdszQHu9PsYsLCuavhb" "/dns4/bootnode2.creditcoin.network/tcp/30333/p2p/12D3KooWSQye3uN3bZQRRC4oZbpiAZXkP2o5UZh6S8pqyh24bF3k" "/dns4/bootnode3.creditcoin.network/tcp/30333/p2p/12D3KooWFrsEZ2aSfiigAxs6ir2kU6en4BewotyCXPhrJ7T1AzjN" \
   --public-addr "/dns4/$PUBLIC_IP/tcp/${P2P_PORT}" \
   --chain mainnet \
@@ -152,6 +205,7 @@ EODC
       - NODE_NAME=\${NODE_NAME_${NODE_NUM}:-${NODE_NAME}}
       - P2P_PORT=\${P2P_PORT_NODE${NODE_NUM}:-${P2P_PORT}}
       - WS_PORT=\${WS_PORT_NODE${NODE_NUM}:-${WS_PORT}}
+      - TELEMETRY_ENABLED=\${TELEMETRY_ENABLED_${NODE_NUM}:-${TELEMETRY_ENABLED}}
     restart: unless-stopped
     networks:
       creditnet2:

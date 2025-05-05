@@ -16,11 +16,11 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
     echo "===== Creditcoin 2.0 레거시 노드 정리 시작 ====="
 
     echo "실행 중인 node 컨테이너 중지 및 삭제..."
-    docker ps -a | grep '^node[0-9]' | awk '{print $1}' | xargs -r docker stop
-    docker ps -a | grep '^node[0-9]' | awk '{print $1}' | xargs -r docker rm
+    docker ps -a --format "{{.Names}}" | grep '^node[0-9]' | xargs -r docker stop
+    docker ps -a --format "{{.Names}}" | grep '^node[0-9]' | xargs -r docker rm
     
     echo "node 이미지 삭제..."
-    docker images | grep 'creditcoin2-node' | awk '{print $3}' | xargs -r docker rmi -f
+    docker images | grep 'creditcoin2' | awk '{print $3}' | xargs -r docker rmi -f
     
     echo "===== 파일 시스템 정리 시작 ====="
 

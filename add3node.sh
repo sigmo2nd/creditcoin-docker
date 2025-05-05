@@ -1,12 +1,24 @@
 #!/bin/bash
 
-if [ $# -lt 1 ] || [ $# -gt 2 ]; then
-  echo "사용법: $0 <노드번호> [git_tag]"
+if [ $# -lt 1 ]; then
+  echo "사용법: $0 <노드번호> [옵션]"
+  echo ""
+  echo "필수 매개변수:"
+  echo "  <노드번호>         생성할 노드의 번호 (예: 0, 1, 2, ...)"
+  echo ""
+  echo "옵션:"
+  echo "  -v, --version      노드 버전 (기본값: 3.32.0-mainnet)"
+  echo "  -t, --telemetry    텔레메트리 활성화 (기본값: 비활성화)"
+  echo "  -n, --name         노드 이름 (기본값: 3Node<번호>)"
+  echo "  -p, --pruning      프루닝 값 설정 (기본값: 0, 0일 경우 옵션 추가 안함)"
   echo ""
   echo "사용 예시:"
-  echo "  ./add3node.sh 0          # 기본 버전(3.32.0-mainnet)으로 3node0 생성"
-  echo "  ./add3node.sh 0 3.39.0-mainnet  # 최신 버전으로 3node0 생성"
-  echo "  ./add3node.sh 1 3.32.0-mainnet  # 안정 버전으로 3node1 생성"
+  echo "  ./add3node.sh 0                      # 기본 설정으로 노드 생성"
+  echo "  ./add3node.sh 1 -v 3.39.0-mainnet    # 최신 버전으로 노드 생성"
+  echo "  ./add3node.sh 2 -t                   # 텔레메트리 활성화한 노드 생성"
+  echo "  ./add3node.sh 3 -n ValidatorA        # 지정한 이름으로 노드 생성"
+  echo "  ./add3node.sh 4 -p 1000              # 프루닝 값 1000으로 설정"
+  echo "  ./add3node.sh 5 -v 3.39.0-mainnet -t -n MainNode -p 1000  # 모든 옵션 지정"
   echo ""
   echo "버전 정보:"
   echo "  3.39.0-mainnet: 최신 메인넷 버전"
@@ -15,10 +27,48 @@ if [ $# -lt 1 ] || [ $# -gt 2 ]; then
   exit 1
 fi
 
+# 첫 번째 매개변수는 노드 번호
 NODE_NUM=$1
-GIT_TAG=${2:-3.32.0-mainnet}
+shift
 
-echo "사용할 버전: $GIT_TAG"
+# 기본값 설정
+GIT_TAG="3.32.0-mainnet"
+TELEMETRY_ENABLED="false"
+NODE_NAME="3Node$NODE_NUM"
+PRUNING="0"
+
+# 옵션 파싱
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -v|--version)
+      GIT_TAG="$2"
+      shift 2
+      ;;
+    -t|--telemetry)
+      TELEMETRY_ENABLED="true"
+      shift
+      ;;
+    -n|--name)
+      NODE_NAME="$2"
+      shift 2
+      ;;
+    -p|--pruning)
+      PRUNING="$2"
+      shift 2
+      ;;
+    *)
+      echo "알 수 없는 옵션: $1"
+      exit 1
+      ;;
+  esac
+done
+
+echo "사용할 설정:"
+echo "- 노드 번호: $NODE_NUM"
+echo "- 노드 이름: $NODE_NAME"
+echo "- 텔레메트리: $([ "$TELEMETRY_ENABLED" == "true" ] && echo "활성화" || echo "비활성화")"
+echo "- 버전: $GIT_TAG"
+echo "- 프루닝: $PRUNING $([ "$PRUNING" == "0" ] && echo "(비활성화)" || echo "")"
 
 # 현재 작업 디렉토리 저장
 CURRENT_DIR=$(pwd)
@@ -86,6 +136,9 @@ fi
 # 노드 설정 추가
 grep -q "P2P_PORT_3NODE${NODE_NUM}" .env 2>/dev/null || echo "P2P_PORT_3NODE${NODE_NUM}=${P2P_PORT}" >> .env
 grep -q "RPC_PORT_3NODE${NODE_NUM}" .env 2>/dev/null || echo "RPC_PORT_3NODE${NODE_NUM}=${RPC_PORT}" >> .env
+grep -q "NODE_NAME_3NODE${NODE_NUM}" .env 2>/dev/null || echo "NODE_NAME_3NODE${NODE_NUM}=${NODE_NAME}" >> .env
+grep -q "TELEMETRY_3NODE${NODE_NUM}" .env 2>/dev/null || echo "TELEMETRY_3NODE${NODE_NUM}=${TELEMETRY_ENABLED}" >> .env
+grep -q "PRUNING_3NODE${NODE_NUM}" .env 2>/dev/null || echo "PRUNING_3NODE${NODE_NUM}=${PRUNING}" >> .env
 
 # Dockerfile 생성 (파일이 없는 경우)
 if [ ! -f "Dockerfile" ]; then
@@ -136,12 +189,20 @@ if [ ! -s /root/data/chains/creditcoin3/network/secret_ed25519 ]; then \n\
   echo "Ed25519 키가 없거나 비어있어서 새로 생성합니다." \n\
   dd if=/dev/urandom of=/root/data/chains/creditcoin3/network/secret_ed25519 bs=32 count=1 \n\
 fi \n\
+\n\
+# 텔레메트리 설정 결정 \n\
+if [ "${TELEMETRY_ENABLED}" == "true" ]; then \n\
+  TELEMETRY_OPTS="" \n\
+else \n\
+  TELEMETRY_OPTS="--no-telemetry" \n\
+fi \n\
+\n\
 /root/creditcoin3/target/release/creditcoin3-node \
   --validator \
   --name ${NODE_NAME} \
   --prometheus-external \
   --telemetry-url "wss://telemetry.creditcoin.network/submit/ 0" \
-  --no-telemetry \
+  $TELEMETRY_OPTS \
   --bootnodes "/dns4/cc3-bootnode.creditcoin.network/tcp/30333/p2p/12D3KooWLGyvbdQ3wTGjRAEueFsDnstZnV8fN3iyPTmHeyswSPGy" \
   --public-addr "/dns4/$PUBLIC_IP/tcp/${P2P_PORT}" \
   --chain /root/data/chainspecs/mainnetSpecRaw.json \
@@ -203,10 +264,11 @@ else
     environment:
       - SERVER_ID=\${SERVER_ID:-dock}
       - NODE_ID=${NODE_NUM}
-      - NODE_NAME=3Node${NODE_NUM}
+      - NODE_NAME=\${NODE_NAME_3NODE${NODE_NUM}:-${NODE_NAME}}
       - P2P_PORT=\${P2P_PORT_3NODE${NODE_NUM}:-${P2P_PORT}}
       - RPC_PORT=\${RPC_PORT_3NODE${NODE_NUM}:-${RPC_PORT}}
-      - PRUNING=0
+      - TELEMETRY_ENABLED=\${TELEMETRY_3NODE${NODE_NUM}:-${TELEMETRY_ENABLED}}
+      - PRUNING=\${PRUNING_3NODE${NODE_NUM}:-${PRUNING}}
       - GIT_TAG=${GIT_TAG}
     networks:
       creditnet:
@@ -227,7 +289,11 @@ EOF
 fi
 
 echo "----------------------------------------------------"
-echo "버전 ${GIT_TAG}으로 3node${NODE_NUM}이 설정되었습니다."
+echo "다음 설정으로 3node${NODE_NUM}이 생성되었습니다:"
+echo "- 노드 이름: ${NODE_NAME}"
+echo "- 텔레메트리: $([ "$TELEMETRY_ENABLED" == "true" ] && echo "활성화" || echo "비활성화")"
+echo "- 버전: ${GIT_TAG}"
+echo "- 프루닝: ${PRUNING} $([ "$PRUNING" == "0" ] && echo "(비활성화)" || echo "")"
 echo "----------------------------------------------------"
 echo ""
 echo "사용 가능한 버전:"
@@ -235,7 +301,7 @@ echo "  - 3.39.0-mainnet (최신 버전) - 보다 많은 기능, 업데이트 �
 echo "  - 3.32.0-mainnet (안정 버전) - 안정성 중시, 메모리 사용 최적화"
 echo ""
 echo "노드를 시작하려면 다음 명령어를 실행하세요:"
-echo "docker compose build --no-cache 3node${NODE_NUM} && docker compose up -d 3node${NODE_NUM}"
+echo "docker compose -p creditcoin3 build --no-cache 3node${NODE_NUM} && docker compose -p creditcoin3 up -d 3node${NODE_NUM}"
 echo ""
 echo "실행 중인 노드 확인: docker ps"
 echo "로그 확인: docker logs -f 3node${NODE_NUM}"
