@@ -79,11 +79,14 @@ if [ -f "$HOME/.config/creditcoin-docker/config" ]; then
     rotatekey() { 
       local node=$1
       if [[ $node == 3node* ]]; then
-        echo "Rotating session keys for $node"
-        docker exec $node curl -s -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys", "params":[]}' http://localhost:9933/
+        local num=$(echo $node | sed 's/3node//g')
+        local port=$((33980 + $num))
+        echo "Rotating session keys for $node..."
+        docker exec $node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys", "params":[]}'"'"' http://localhost:'$port'/' | jq
       elif [[ $node =~ ^[0-9]+$ ]]; then
-        echo "Rotating session keys for 3node$node"
-        docker exec 3node$node curl -s -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys", "params":[]}' http://localhost:9933/
+        local port=$((33980 + $node))
+        echo "Rotating session keys for 3node$node..."
+        docker exec 3node$node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys", "params":[]}'"'"' http://localhost:'$port'/' | jq
       else
         echo "Invalid input. Use '3nodeX' format or just the node number."
       fi
@@ -93,11 +96,150 @@ if [ -f "$HOME/.config/creditcoin-docker/config" ]; then
     rotatekeyLegacy() { 
       local node=$1
       if [[ $node == node* ]]; then
-        echo "Rotating session keys for $node"
-        docker exec $node curl -s -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys", "params":[]}' http://localhost:9933/
+        local num=$(echo $node | sed 's/node//g')
+        local port=$((33970 + $num))
+        echo "Rotating session keys for $node..."
+        docker exec $node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys", "params":[]}'"'"' http://localhost:'$port'/' | jq
       elif [[ $node =~ ^[0-9]+$ ]]; then
-        echo "Rotating session keys for node$node"
-        docker exec node$node curl -s -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys", "params":[]}' http://localhost:9933/
+        local port=$((33970 + $node))
+        echo "Rotating session keys for node$node..."
+        docker exec node$node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "author_rotateKeys", "params":[]}'"'"' http://localhost:'$port'/' | jq
+      else
+        echo "Invalid input. Use 'nodeX' format or just the node number."
+      fi
+    }
+    
+    # 노드 건강 상태 확인 - 3.0 노드
+    checkHealth() {
+      local node=$1
+      if [[ $node == 3node* ]]; then
+        local num=$(echo $node | sed 's/3node//g')
+        local port=$((33980 + $num))
+        echo "Checking health status for $node..."
+        docker exec $node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "system_health", "params":[]}'"'"' http://localhost:'$port'/' | jq
+      elif [[ $node =~ ^[0-9]+$ ]]; then
+        local port=$((33980 + $node))
+        echo "Checking health status for 3node$node..."
+        docker exec 3node$node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "system_health", "params":[]}'"'"' http://localhost:'$port'/' | jq
+      else
+        echo "Invalid input. Use '3nodeX' format or just the node number."
+      fi
+    }
+    
+    # 노드 건강 상태 확인 - 2.0 노드
+    checkHealthLegacy() {
+      local node=$1
+      if [[ $node == node* ]]; then
+        local num=$(echo $node | sed 's/node//g')
+        local port=$((33970 + $num))
+        echo "Checking health status for $node..."
+        docker exec $node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "system_health", "params":[]}'"'"' http://localhost:'$port'/' | jq
+      elif [[ $node =~ ^[0-9]+$ ]]; then
+        local port=$((33970 + $node))
+        echo "Checking health status for node$node..."
+        docker exec node$node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "system_health", "params":[]}'"'"' http://localhost:'$port'/' | jq
+      else
+        echo "Invalid input. Use 'nodeX' format or just the node number."
+      fi
+    }
+    
+    # 노드 이름 확인 - 3.0 노드
+    checkName() {
+      local node=$1
+      if [[ $node == 3node* ]]; then
+        local num=$(echo $node | sed 's/3node//g')
+        local port=$((33980 + $num))
+        echo "Checking node name for $node..."
+        docker exec $node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "system_name", "params":[]}'"'"' http://localhost:'$port'/' | jq
+      elif [[ $node =~ ^[0-9]+$ ]]; then
+        local port=$((33980 + $node))
+        echo "Checking node name for 3node$node..."
+        docker exec 3node$node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "system_name", "params":[]}'"'"' http://localhost:'$port'/' | jq
+      else
+        echo "Invalid input. Use '3nodeX' format or just the node number."
+      fi
+    }
+    
+    # 노드 이름 확인 - 2.0 노드
+    checkNameLegacy() {
+      local node=$1
+      if [[ $node == node* ]]; then
+        local num=$(echo $node | sed 's/node//g')
+        local port=$((33970 + $num))
+        echo "Checking node name for $node..."
+        docker exec $node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "system_name", "params":[]}'"'"' http://localhost:'$port'/' | jq
+      elif [[ $node =~ ^[0-9]+$ ]]; then
+        local port=$((33970 + $node))
+        echo "Checking node name for node$node..."
+        docker exec node$node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "system_name", "params":[]}'"'"' http://localhost:'$port'/' | jq
+      else
+        echo "Invalid input. Use 'nodeX' format or just the node number."
+      fi
+    }
+    
+    # 노드 버전 확인 - 3.0 노드
+    checkVersion() {
+      local node=$1
+      if [[ $node == 3node* ]]; then
+        local num=$(echo $node | sed 's/3node//g')
+        local port=$((33980 + $num))
+        echo "Checking node version for $node..."
+        docker exec $node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "system_version", "params":[]}'"'"' http://localhost:'$port'/' | jq
+      elif [[ $node =~ ^[0-9]+$ ]]; then
+        local port=$((33980 + $node))
+        echo "Checking node version for 3node$node..."
+        docker exec 3node$node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "system_version", "params":[]}'"'"' http://localhost:'$port'/' | jq
+      else
+        echo "Invalid input. Use '3nodeX' format or just the node number."
+      fi
+    }
+    
+    # 노드 버전 확인 - 2.0 노드
+    checkVersionLegacy() {
+      local node=$1
+      if [[ $node == node* ]]; then
+        local num=$(echo $node | sed 's/node//g')
+        local port=$((33970 + $num))
+        echo "Checking node version for $node..."
+        docker exec $node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "system_version", "params":[]}'"'"' http://localhost:'$port'/' | jq
+      elif [[ $node =~ ^[0-9]+$ ]]; then
+        local port=$((33970 + $node))
+        echo "Checking node version for node$node..."
+        docker exec node$node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "system_version", "params":[]}'"'"' http://localhost:'$port'/' | jq
+      else
+        echo "Invalid input. Use 'nodeX' format or just the node number."
+      fi
+    }
+    
+    # 최신 블록 정보 확인 - 3.0 노드
+    getLatestBlock() {
+      local node=$1
+      if [[ $node == 3node* ]]; then
+        local num=$(echo $node | sed 's/3node//g')
+        local port=$((33980 + $num))
+        echo "Getting latest block info for $node..."
+        docker exec $node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "chain_getBlock", "params":[]}'"'"' http://localhost:'$port'/' | jq
+      elif [[ $node =~ ^[0-9]+$ ]]; then
+        local port=$((33980 + $node))
+        echo "Getting latest block info for 3node$node..."
+        docker exec 3node$node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "chain_getBlock", "params":[]}'"'"' http://localhost:'$port'/' | jq
+      else
+        echo "Invalid input. Use '3nodeX' format or just the node number."
+      fi
+    }
+    
+    # 최신 블록 정보 확인 - 2.0 노드
+    getLatestBlockLegacy() {
+      local node=$1
+      if [[ $node == node* ]]; then
+        local num=$(echo $node | sed 's/node//g')
+        local port=$((33970 + $num))
+        echo "Getting latest block info for $node..."
+        docker exec $node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "chain_getBlock", "params":[]}'"'"' http://localhost:'$port'/' | jq
+      elif [[ $node =~ ^[0-9]+$ ]]; then
+        local port=$((33970 + $node))
+        echo "Getting latest block info for node$node..."
+        docker exec node$node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "chain_getBlock", "params":[]}'"'"' http://localhost:'$port'/' | jq
       else
         echo "Invalid input. Use 'nodeX' format or just the node number."
       fi
@@ -121,9 +263,10 @@ if [ -f "$HOME/.config/creditcoin-docker/config" ]; then
         echo "노드 $node 페이아웃 실행 중..."
         # 노드 번호 추출
         local num=$(echo $node | sed 's/3node//g')
-        echo "RPC 포트: 9933 (내부)"
+        local port=$((33980 + $num))
+        echo "RPC 포트: $port (내부)"
         # 페이아웃 명령 실행 (컨테이너 내부에서)
-        docker exec $node curl -s -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "staking_payoutStakers","params":["ACCOUNT_ADDRESS", ERA_NUMBER]}' http://localhost:9933/
+        docker exec $node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "staking_payoutStakers","params":["ACCOUNT_ADDRESS", ERA_NUMBER]}'"'"' http://localhost:'$port'/' | jq
         echo ""
         sleep 2
       done
@@ -149,9 +292,10 @@ if [ -f "$HOME/.config/creditcoin-docker/config" ]; then
         echo "노드 $node 페이아웃 실행 중..."
         # 노드 번호 추출
         local num=$(echo $node | sed 's/node//g')
-        echo "RPC 포트: 9933 (내부)"
+        local port=$((33970 + $num))
+        echo "RPC 포트: $port (내부)"
         # 페이아웃 명령 실행 (컨테이너 내부에서)
-        docker exec $node curl -s -H "Content-Type: application/json" -d '{"id":1, "jsonrpc":"2.0", "method": "staking_payoutStakers","params":["ACCOUNT_ADDRESS", ERA_NUMBER]}' http://localhost:9933/
+        docker exec $node bash -c 'curl -s -H "Content-Type: application/json" -d '"'"'{"id":1, "jsonrpc":"2.0", "method": "staking_payoutStakers","params":["ACCOUNT_ADDRESS", ERA_NUMBER]}'"'"' http://localhost:'$port'/' | jq
         echo ""
         sleep 2
       done
