@@ -361,9 +361,9 @@ dkill() {
 
 # 시스템 유틸리티 함수
 journalcall() { journalctl -u $1.service -n 50 -f; }
-alias jc=journalcall
-alias cdsys='cd /etc/systemd/system'
-alias sysdr='systemctl daemon-reload'
+alias jc="journalcall"
+alias cdsys="cd /etc/systemd/system"
+alias sysdr="systemctl daemon-reload"
 sysre() { systemctl restart $1; }
 sysen() { systemctl enable $1; }
 sysst() { systemctl status $1; }
