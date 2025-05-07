@@ -70,19 +70,14 @@ After running the setup script, the following commands become available:
 
 ### Node Management Commands
 
-- `checkVersion [3node_number]` - Check Creditcoin 3.0 node version (e.g., `checkVersion 0` or `checkVersion 3node0`)
-- `checkVersionLegacy [node_number]` - Check Creditcoin 2.0 node version (e.g., `checkVersionLegacy 0` or `checkVersionLegacy node0`)
-- `checkHealth [3node_number]` - Check Creditcoin 3.0 node health status
-- `checkHealthLegacy [node_number]` - Check Creditcoin 2.0 node health status
-- `checkName [3node_number]` - Check Creditcoin 3.0 node name
-- `checkNameLegacy [node_number]` - Check Creditcoin 2.0 node name
-- `getLatestBlock [3node_number]` - Get latest block info for Creditcoin 3.0 node
-- `getLatestBlockLegacy [node_number]` - Get latest block info for Creditcoin 2.0 node
-- `rotatekey [3node_number]` - Rotate session keys for 3.0 nodes (accepts either "3node0" or just "0")
-- `rotatekeyLegacy [node_number]` - Rotate session keys for 2.0 nodes (accepts either "node0" or just "0")
+- `checkVersion [node_name]` - Check node version
+- `checkHealth [node_name]` - Check node health status
+- `checkName [node_name]` - Check node name
+- `getLatestBlock [node_name]` - Get latest block info
+- `rotatekey [node_name]` - Rotate session keys
 - `payoutAll` - Execute payouts for all running 3.0 nodes
 - `payoutAllLegacy` - Execute payouts for all running 2.0 nodes
-- `genkey [container_name]` - Generate node keys (e.g., `genkey 3node0` or `genkey node0`)
+- `genkey [container_name]` - Generate node keys
 
 ### Docker Management Commands
 - `cdcd` - Navigate to the Creditcoin Docker directory
@@ -93,6 +88,7 @@ After running the setup script, the following commands become available:
 - `dstop [container]` - Stop a container
 - `dstart [container]` - Start a container
 - `dlog [container]` - Show container logs
+- `dkill [node_name]` - Completely remove a specific node with confirmation prompt
 
 ### System Commands
 - `journalcall [service]` - View service logs
@@ -107,9 +103,28 @@ After running the setup script, the following commands become available:
 - `nanocall [service]` - Edit service file
 - `nn [service]` - Shorthand for nanocall
 
+## Files and Structure
+
+The setup creates the following structure:
+- `.bashrc` - Contains a small section that sources the utilities
+- `creditcoin-utils.sh` - All utility functions in the installation directory
+
+You can directly edit the utility functions by modifying the creditcoin-utils.sh file:
+
+```bash
+nano creditcoin-utils.sh
+```
+
+After editing, reload your bashrc:
+
+```bash
+source ~/.bashrc
+```
+
 ## General Precautions
 
 - Cleanup scripts delete all related containers, images, volumes, and directories. Backing up your data before use is recommended.
+- The `dkill` command completely removes a specific node by stopping the container, removing it, and deleting all associated data.
 - Sufficient system resources are required for node operation.
 - When telemetry is enabled, node information is made public to the Creditcoin network.
 
