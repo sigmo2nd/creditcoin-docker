@@ -7,7 +7,7 @@ if [ $# -lt 1 ]; then
   echo "  <노드번호>         생성할 노드의 번호 (예: 0, 1, 2, ...)"
   echo ""
   echo "옵션:"
-  echo "  -v, --version      노드 버전 (기본값: 3.32.0-mainnet)"
+  echo "  -v, --version      노드 버전 (기본값: 3.39.0-mainnet)"
   echo "  -t, --telemetry    텔레메트리 활성화 (기본값: 비활성화)"
   echo "  -n, --name         노드 이름 (기본값: 3Node<번호>)"
   echo "  -p, --pruning      프루닝 값 설정 (기본값: 0, 0일 경우 옵션 추가 안함)"
@@ -18,11 +18,11 @@ if [ $# -lt 1 ]; then
   echo "  ./add3node.sh 2 -t                   # 텔레메트리 활성화한 노드 생성"
   echo "  ./add3node.sh 3 -n ValidatorA        # 지정한 이름으로 노드 생성"
   echo "  ./add3node.sh 4 -p 1000              # 프루닝 값 1000으로 설정"
-  echo "  ./add3node.sh 5 -v 3.39.0-mainnet -t -n MainNode -p 1000  # 모든 옵션 지정"
+  echo "  ./add3node.sh 5 -v 3.32.0-mainnet -t -n MainNode -p 1000  # 모든 옵션 지정"
   echo ""
   echo "버전 정보:"
-  echo "  3.39.0-mainnet: 최신 메인넷 버전"
-  echo "  3.32.0-mainnet: 안정 메인넷 버전"
+  echo "  3.39.0-mainnet: 최신 메인넷 버전 (기본값)"
+  echo "  3.32.0-mainnet: 안정 메인넷 버전 (메모리 사용 최적화)"
   echo ""
   exit 1
 fi
@@ -32,7 +32,7 @@ NODE_NUM=$1
 shift
 
 # 기본값 설정
-GIT_TAG="3.32.0-mainnet"
+GIT_TAG="3.39.0-mainnet"
 TELEMETRY_ENABLED="false"
 NODE_NAME="3Node$NODE_NUM"
 PRUNING="0"
