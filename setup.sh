@@ -162,16 +162,6 @@ CREDITCOIN_UTILS="\$CREDITCOIN_DIR/creditcoin-utils.sh"
 if [ -f "\$CREDITCOIN_UTILS" ]; then
     source "\$CREDITCOIN_UTILS"
 fi
-
-# Creditcoin Docker 디렉토리로 이동
-cdcd() { cd "\$CREDITCOIN_DIR"; }
-
-# 기본 별칭들 (짧은 것들만 여기에 유지)
-alias dps='docker ps'
-alias dpsa='docker ps -a'
-alias dstats='docker stats'
-alias updateb='source ~/.bashrc'
-alias editb='nano ~/.bashrc'
 EOF
 
   echo -e "${GREEN}.bashrc에 유틸리티가 추가되었습니다.${NC}"
