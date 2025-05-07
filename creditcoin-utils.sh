@@ -371,7 +371,7 @@ nanocall() { nano /etc/systemd/system/$1.service; }
 alias nn=nanocall
 
 # 세션키 백업 함수
-backupKeys() {
+backupkeys() {
   # 색상 정의
   GREEN='\033[0;32m'
   YELLOW='\033[0;33m'
@@ -381,8 +381,8 @@ backupKeys() {
 
   # 사용법 표시
   if [ -z "$1" ]; then
-    echo -e "${YELLOW}사용법: backupKeys <노드명>${NC}"
-    echo -e "예시: backupKeys 3node0"
+    echo -e "${YELLOW}사용법: backupkeys <노드명>${NC}"
+    echo -e "예시: backupkeys 3node0"
     return 1
   fi
 
@@ -500,7 +500,7 @@ backupKeys() {
 }
 
 # 세션키 복원 함수
-restoreKeys() {
+restorekeys() {
   # 색상 정의
   GREEN='\033[0;32m'
   YELLOW='\033[0;33m'
@@ -510,8 +510,8 @@ restoreKeys() {
 
   # 사용법 표시
   if [ -z "$1" ] || [ -z "$2" ]; then
-    echo -e "${YELLOW}사용법: restoreKeys <백업파일> <대상노드명>${NC}"
-    echo -e "예시: restoreKeys ./3node0-keys-20250507-1234.tar.gz 3node1"
+    echo -e "${YELLOW}사용법: restorekeys <백업파일> <대상노드명>${NC}"
+    echo -e "예시: restorekeys ./3node0-keys-20250507-1234.tar.gz 3node1"
     return 1
   fi
 

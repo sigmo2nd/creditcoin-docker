@@ -92,8 +92,8 @@ After running the setup script, the following commands become available:
 - `dkill [node_name]` - Completely remove a specific node with confirmation prompt
 
 ### Session Keys Management Commands
-- `backupKeys [node_name]` - Backup session keys of a node (stops the node if needed)
-- `restoreKeys [backup_file] [target_node]` - Restore session keys to a node (stops the node if needed)
+- `backupkeys [node_name]` - Backup session keys of a node (stops the node if needed)
+- `restorekeys [backup_file] [target_node]` - Restore session keys to a node (stops the node if needed)
 
 ### System Commands
 - `journalcall [service]` - View service logs
