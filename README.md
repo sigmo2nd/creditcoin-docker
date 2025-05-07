@@ -75,6 +75,7 @@ After running the setup script, the following commands become available:
 - `checkName [node_name]` - Check node name
 - `getLatestBlock [node_name]` - Get latest block info
 - `rotatekey [node_name]` - Rotate session keys
+- `payout [node_name]` - Execute payout for a specific node
 - `payoutAll` - Execute payouts for all running 3.0 nodes
 - `payoutAllLegacy` - Execute payouts for all running 2.0 nodes
 - `genkey [container_name]` - Generate node keys
@@ -90,6 +91,10 @@ After running the setup script, the following commands become available:
 - `dlog [container]` - Show container logs
 - `dkill [node_name]` - Completely remove a specific node with confirmation prompt
 
+### Session Keys Management Commands
+- `backupKeys [node_name]` - Backup session keys of a node (stops the node if needed)
+- `restoreKeys [backup_file] [target_node]` - Restore session keys to a node (stops the node if needed)
+
 ### System Commands
 - `journalcall [service]` - View service logs
 - `jc [service]` - Shorthand for journalcall
@@ -103,23 +108,30 @@ After running the setup script, the following commands become available:
 - `nanocall [service]` - Edit service file
 - `nn [service]` - Shorthand for nanocall
 
-## Files and Structure
+## Session Keys Management
 
-The setup creates the following structure:
-- `.bashrc` - Contains a small section that sources the utilities
-- `creditcoin-utils.sh` - All utility functions in the installation directory
+Session keys are essential for validator operations. The utility provides two commands for securely managing session keys:
 
-You can directly edit the utility functions by modifying the creditcoin-utils.sh file:
+1. **Backing Up Session Keys**:
+   ```bash
+   backupKeys 3node0
+   ```
+   This command will:
+   - Stop the node if it's running (after confirmation)
+   - Backup session keys to a tar.gz file in the current directory
+   - Restart the node if it was running
 
-```bash
-nano creditcoin-utils.sh
-```
+2. **Restoring Session Keys**:
+   ```bash
+   restoreKeys ./3node0-keys-20250507-1234.tar.gz 3node1
+   ```
+   This command will:
+   - Stop the target node if it's running (after confirmation)
+   - Backup existing keys (if any)
+   - Restore session keys from the backup file
+   - Offer to restart the node
 
-After editing, reload your bashrc:
-
-```bash
-source ~/.bashrc
-```
+**Important**: Never run two nodes with the same session keys simultaneously, as this could result in slashing penalties.
 
 ## General Precautions
 
